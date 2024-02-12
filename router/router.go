@@ -1,30 +1,53 @@
 package router
 
 import (
+	"example.com/task-management-app/config"
 	"example.com/task-management-app/handler"
+	"example.com/task-management-app/middleware"
+	"example.com/task-management-app/swagger"
 	"github.com/gin-gonic/gin"
 )
 
 type Routes struct {
+	Config      config.Config
 	TaskHandler handler.TaskHandler
-	RouteBase   *gin.RouterGroup
+	UserHandler handler.UserHandler
 }
 
-func SetupRouter(routes Routes) *gin.Engine {
+func NewRouter(routes Routes) *gin.Engine {
 	r := gin.Default()
-	routes.RouteBase = r.Group("api")
-	routes.taskRoute()
+
+	baseRouter := r.Group(routes.Config.BaseUrl)
+	routes.authRoute(baseRouter)
+
+	// base router with auth
+	baseRouterAuth := baseRouter.Group("/", middleware.AuthMiddleware())
+	routes.taskRoute(baseRouterAuth)
+
+	swagger.NewSwaggerApi(baseRouter)
+
 	return r
 }
 
-func (r *Routes) taskRoute() {
-	r.RouteBase.Group("/v1/task").
-		GET("/", r.TaskHandler.List).
-		GET("/:id", r.TaskHandler.Get)
+func (r *Routes) taskRoute(router *gin.RouterGroup) {
+	taskRouterV1 := router.Group("/v1/task")
 
-	// api.GET("/task/:id", handler.Get)
-	// api.POST("/task", handler.Create)
-	// api.DELETE("/task/:id", handler.Delete)
+	taskRouterV1.GET("/", r.TaskHandler.List)
+	taskRouterV1.GET("/:id", r.TaskHandler.Get)
+	taskRouterV1.POST("/", r.TaskHandler.Create)
+	taskRouterV1.DELETE("/:id", r.TaskHandler.Delete)
+}
+
+func (r *Routes) userRoute(router *gin.RouterGroup) {
+	// userRouterV1 := router.Group("/v1/user")
+
+	// userRouterV1.POST("/", r.UserHandler.Create)
+	// userRouterV1.POST("/auth", r.UserHandler.Authentication)
+}
+
+func (r *Routes) authRoute(router *gin.RouterGroup) {
+	router.POST("/register", r.UserHandler.Create)
+	router.POST("/auth", r.UserHandler.Authentication)
 }
 
 // func userRoute(r *gin.Engine, handler handler.Handler) {

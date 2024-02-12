@@ -1,13 +1,16 @@
 package repository
 
 import (
+	"fmt"
+
 	"example.com/task-management-app/model"
 	"gorm.io/gorm"
 )
 
 type ITaskRepository interface {
-	List() ([]model.Task, error)
-	Get(id int64) (model.Task, error)
+	List(userId string) ([]model.Task, error)
+	Get(id string, userId string) (model.Task, error)
+	Delete(id string, userId string) error
 	Create(newTask model.Task) error
 }
 
@@ -21,22 +24,31 @@ func NewTaskRepository(db *gorm.DB) ITaskRepository {
 	}
 }
 
-func (r *TaskRepository) List() ([]model.Task, error) {
+func (r *TaskRepository) List(userId string) ([]model.Task, error) {
 	tasks := []model.Task{}
-	err := r.PostgreClient.Find(&tasks).Error
+	err := r.PostgreClient.Model(&model.Task{}).Where("user_id = ?", userId).Scan(&tasks).Error
 	if err != nil {
 		return nil, err
 	}
 	return tasks, nil
 }
 
-func (r *TaskRepository) Get(id int64) (model.Task, error) {
+func (r *TaskRepository) Get(id string, userId string) (model.Task, error) {
 	task := model.Task{}
-	err := r.PostgreClient.First(&task, id).Error
+	err := r.PostgreClient.Model(&task).Where("id = ?", id).Where("user_id = ?", userId).First(&task).Error
 	if err != nil {
+		fmt.Println(err)
 		return task, err
 	}
 	return task, nil
+}
+
+func (r *TaskRepository) Delete(id string, userId string) error {
+	err := r.PostgreClient.Where("id = ?", id).Where("user_id = ?", userId).Delete(&model.Task{}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *TaskRepository) Create(newTask model.Task) error {

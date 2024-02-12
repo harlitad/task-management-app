@@ -8,8 +8,9 @@ import (
 )
 
 type ITaskUsecase interface {
-	Get(id int64) (model.Task, error)
-	List() ([]model.Task, error)
+	Get(id string, userId string) (model.Task, error)
+	Delete(id string, userId string) error
+	List(userId string) ([]model.Task, error)
 	Create(newTask model.Task) (model.Task, error)
 }
 
@@ -23,16 +24,24 @@ func NewTaskUsecase(taskService service.ITaskService) ITaskUsecase {
 	}
 }
 
-func (t *TaskUsecase) Get(id int64) (model.Task, error) {
-	task, err := t.TaskService.Get(id)
+func (t *TaskUsecase) Get(id string, userId string) (model.Task, error) {
+	task, err := t.TaskService.Get(id, userId)
 	if err != nil {
 		return model.Task{}, err
 	}
 	return task, nil
 }
 
-func (t *TaskUsecase) List() ([]model.Task, error) {
-	tasks, err := t.TaskService.List()
+func (t *TaskUsecase) Delete(id string, userId string) error {
+	err := t.TaskService.Delete(id, userId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *TaskUsecase) List(userId string) ([]model.Task, error) {
+	tasks, err := t.TaskService.List(userId)
 	if err != nil {
 		fmt.Println("error?")
 		return nil, err
@@ -40,10 +49,10 @@ func (t *TaskUsecase) List() ([]model.Task, error) {
 	return tasks, nil
 }
 
-func (u *TaskUsecase) Create(newTask model.Task) (model.Task, error) {
-	err := u.TaskService.Create(newTask)
+func (u *TaskUsecase) Create(task model.Task) (model.Task, error) {
+	res, err := u.TaskService.Create(task)
 	if err != nil {
-		return newTask, err
+		return model.Task{}, err
 	}
-	return newTask, nil
+	return res, nil
 }

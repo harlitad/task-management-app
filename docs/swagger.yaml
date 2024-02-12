@@ -1,5 +1,211 @@
+basePath: /task-management-app
+definitions:
+  model.AuthenticationRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  model.AuthenticationResponse:
+    properties:
+      access_token:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  model.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+  model.CreateTaskResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+  model.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  model.CreateUserResponse:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  model.Task:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: string
+    type: object
+host: localhost:8080
 info:
   contact: {}
-  title: Task Management API
-paths: {}
+  description: Task Management App Swagger APIs.
+  title: Task Management App APIs
+  version: "1.0"
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Authentication
+      parameters:
+      - description: User Authentication JSON
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.AuthenticationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.AuthenticationResponse'
+      summary: Authentication
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Create new user
+      parameters:
+      - description: Create User JSON
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.CreateUserResponse'
+      summary: Create new user
+      tags:
+      - auth
+  /v1/task:
+    get:
+      consumes:
+      - application/json
+      description: Get list user's task
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Task'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get list user's task
+      tags:
+      - task
+    post:
+      consumes:
+      - application/json
+      description: Create user's task
+      parameters:
+      - description: Create Task
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.CreateTaskResponse'
+      security:
+      - BearerAuth: []
+      summary: Create user's task
+      tags:
+      - task
+  /v1/task/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user's task by id
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Delete user's task by id
+      tags:
+      - task
+    get:
+      consumes:
+      - application/json
+      description: Get user's task by id
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Task'
+      security:
+      - BearerAuth: []
+      summary: Get user's task by id
+      tags:
+      - task
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
