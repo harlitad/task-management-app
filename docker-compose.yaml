@@ -1,0 +1,38 @@
+version: 'v2.0.0'
+
+services:
+  tma_postgresql:
+    image: postgres:12-alpine
+    container_name: tma_postgresql
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=tma
+      - POSTGRES_EXTENSIONS=uuid-ossp
+    networks:
+      - tma-network
+    # Uncomment the ports section if you need to access PostgreSQL from outside Docker
+    ports:
+      - "5432:5432"
+
+  service:
+    container_name: tma_service
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - tma_postgresql
+    environment:
+      - POSTGRE_HOST=tma_postgresql
+      - POSTGRE_USERNAME=admin
+      - POSTGRE_PASSWORD=admin
+      - POSTGRE_PORT=5432
+      - POSTGRE_DB_NAME=tma
+      - BASE_URL=task-management-service
+    networks:
+      - tma-network
+
+networks:
+  tma-network:
+    driver: bridge

@@ -1,0 +1,9 @@
+package model
+
+import (
+	"errors"
+)
+
+var (
+	ErrorRecordNotFound = errors.New("record not found")
+)
