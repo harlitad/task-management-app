@@ -4,14 +4,14 @@ import (
 	"errors"
 	"time"
 
-	"example.com/task-management-app/config"
-	"example.com/task-management-app/model"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/harlitad/task-management-app/config"
+	"github.com/harlitad/task-management-app/internal/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func GenerateToken(claims jwt.MapClaims) (string, error) {
-	exp := time.Now().Add(60 * time.Minute).Unix()
+	exp := time.Now().Add(60000 * time.Minute).Unix()
 	claims["exp"] = exp
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	jwtToken, err := token.SignedString([]byte(config.JWTSECRETKEY))

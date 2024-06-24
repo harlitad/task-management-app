@@ -1,3 +1,18 @@
-run:
+run-local: 
+	swag init -g ./cmd/main.go
+	make build-local
+	./main
+
+build-local:
+	go build ./cmd/main.go
+
+run-swagger:
 	swag init
-	go run main.go
+
+run-docker: 
+	swag init -g ./cmd/main.go
+	docker compose build --no-cache
+	docker compose -f docker-compose.yaml up
+
+stop-docker:
+	docker compose -f docker-compose.yaml down

@@ -90,7 +90,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get list user's task",
+                "description": "Get list all task",
                 "consumes": [
                     "application/json"
                 ],
@@ -100,14 +100,14 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "Get list user's task",
+                "summary": "Get list all task",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Task"
+                                "$ref": "#/definitions/dto.Tasks"
                             }
                         }
                     }
@@ -119,7 +119,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create user's task",
+                "description": "Create Task",
                 "consumes": [
                     "application/json"
                 ],
@@ -129,15 +129,15 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "Create user's task",
+                "summary": "Create Task",
                 "parameters": [
                     {
-                        "description": "Create Task",
-                        "name": "user",
+                        "description": "create task request",
+                        "name": "CreateTaskRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.CreateTaskRequest"
+                            "$ref": "#/definitions/dto.CreateTaskRequest"
                         }
                     }
                 ],
@@ -145,7 +145,41 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.CreateTaskResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Task"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/task/today": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get list all task due date by today",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Get list all task due date by today",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Tasks"
+                            }
                         }
                     }
                 }
@@ -158,7 +192,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get user's task by id",
+                "description": "Get task by given Id",
                 "consumes": [
                     "application/json"
                 ],
@@ -168,11 +202,11 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "Get user's task by id",
+                "summary": "Get task by given Id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Task ID",
+                        "description": "task id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -182,7 +216,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Task"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Task"
+                            }
                         }
                     }
                 }
@@ -193,7 +230,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Delete user's task by id",
+                "description": "Delete task by given id (uuid)",
                 "consumes": [
                     "application/json"
                 ],
@@ -203,11 +240,11 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "Delete user's task by id",
+                "summary": "Delete task by given id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Task ID",
+                        "description": "task id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -218,10 +255,137 @@ const docTemplate = `{
                         "description": "No Content"
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update task by given Id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Update task by given Id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "task id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "update task request",
+                        "name": "UpdateTaskRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Task"
+                            }
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "dto.CreateTaskRequest": {
+            "type": "object",
+            "properties": {
+                "assignee_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Task": {
+            "type": "object",
+            "properties": {
+                "assignee_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "update_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Tasks": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Task"
+                    }
+                }
+            }
+        },
+        "dto.UpdateTaskRequest": {
+            "type": "object",
+            "properties": {
+                "assignee_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "model.AuthenticationRequest": {
             "type": "object",
             "properties": {
@@ -242,38 +406,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.CreateTaskRequest": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.CreateTaskResponse": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "status": {
                     "type": "string"
                 }
             }
@@ -298,27 +434,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.Task": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }
@@ -337,9 +456,9 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/task-management-app",
+	BasePath:         "/task-management-service",
 	Schemes:          []string{"http"},
-	Title:            "Task Management App APIs",
+	Title:            "Task Management Service APIs",
 	Description:      "Task Management App Swagger APIs.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

@@ -16,6 +16,7 @@ type Config struct {
 	PostgrePort     string `env:"POSTGRE_PORT"`
 	PostgreDBName   string `env:"POSTGRE_DB_NAME"`
 	BaseUrl         string `env:"BASE_URL" envDefault:"/task-management"`
+	LogLevel        string `env:"LOG_LEVEL" envDefault:"debug"`
 }
 
 func ParseConfig() *Config {
