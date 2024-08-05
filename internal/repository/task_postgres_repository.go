@@ -12,29 +12,19 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type ITaskRepository interface {
-	GetTasks(c context.Context) ([]model.Task, error)
-	GetTasksToday(c context.Context) ([]model.Task, error)
-	GetTaskById(c context.Context, id uuid.UUID) (model.Task, error)
-	Create(c context.Context, newTask model.Task) error
-	UpdateTaskById(c context.Context, id uuid.UUID, newTask model.Task) (model.Task, error)
-	Delete(c context.Context, id uuid.UUID) error
-	Get(c context.Context, id uuid.UUID, userId uuid.UUID) (model.Task, error)
-}
-
-type TaskRepository struct {
+type TaskPostgresRepository struct {
 	PostgreClient *gorm.DB
 	Logger        logger.ILogger
 }
 
-func NewTaskRepository(logger logger.ILogger, db *gorm.DB) ITaskRepository {
-	return &TaskRepository{
+func NewPostgreTaskRepository(logger logger.ILogger, db *gorm.DB) ITaskRepository {
+	return &TaskPostgresRepository{
 		PostgreClient: db,
 		Logger:        logger,
 	}
 }
 
-func (r *TaskRepository) UpdateTaskById(c context.Context, id uuid.UUID, newTask model.Task) (model.Task, error) {
+func (r *TaskPostgresRepository) UpdateTaskById(c context.Context, id uuid.UUID, newTask model.Task) (model.Task, error) {
 	task := model.Task{
 		Id: id,
 	}
@@ -48,7 +38,7 @@ func (r *TaskRepository) UpdateTaskById(c context.Context, id uuid.UUID, newTask
 	return task, nil
 }
 
-func (r *TaskRepository) GetTasks(c context.Context) ([]model.Task, error) {
+func (r *TaskPostgresRepository) GetTasks(c context.Context) ([]model.Task, error) {
 	tasks := []model.Task{}
 	err := r.PostgreClient.Model(&model.Task{}).Scan(&tasks).Error
 	if err != nil {
@@ -57,7 +47,7 @@ func (r *TaskRepository) GetTasks(c context.Context) ([]model.Task, error) {
 	return tasks, nil
 }
 
-func (r *TaskRepository) GetTasksToday(c context.Context) ([]model.Task, error) {
+func (r *TaskPostgresRepository) GetTasksToday(c context.Context) ([]model.Task, error) {
 	tasks := []model.Task{}
 	err := r.PostgreClient.Model(&model.Task{}).Where("DATE(due_date) = ?", time.Now().Format("2006-01-02")).Scan(&tasks).Error
 	if err != nil {
@@ -66,7 +56,7 @@ func (r *TaskRepository) GetTasksToday(c context.Context) ([]model.Task, error) 
 	return tasks, nil
 }
 
-func (r *TaskRepository) GetTaskById(c context.Context, id uuid.UUID) (model.Task, error) {
+func (r *TaskPostgresRepository) GetTaskById(c context.Context, id uuid.UUID) (model.Task, error) {
 	task := model.Task{}
 	err := r.PostgreClient.Model(&task).Where("id = ?", id).First(&task).Error
 	if err == gorm.ErrRecordNotFound {
@@ -78,7 +68,7 @@ func (r *TaskRepository) GetTaskById(c context.Context, id uuid.UUID) (model.Tas
 	return task, nil
 }
 
-func (r *TaskRepository) Get(c context.Context, id uuid.UUID, userId uuid.UUID) (model.Task, error) {
+func (r *TaskPostgresRepository) Get(c context.Context, id uuid.UUID, userId uuid.UUID) (model.Task, error) {
 	task := model.Task{}
 	err := r.PostgreClient.Model(&task).Where("id = ?", id).Where("user_id = ?", userId).First(&task).Error
 	if err != nil {
@@ -87,7 +77,7 @@ func (r *TaskRepository) Get(c context.Context, id uuid.UUID, userId uuid.UUID) 
 	return task, nil
 }
 
-func (r *TaskRepository) Delete(c context.Context, id uuid.UUID) error {
+func (r *TaskPostgresRepository) Delete(c context.Context, id uuid.UUID) error {
 	task := model.Task{
 		Id: id,
 	}
@@ -101,7 +91,7 @@ func (r *TaskRepository) Delete(c context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (r *TaskRepository) Create(c context.Context, newTask model.Task) error {
+func (r *TaskPostgresRepository) Create(c context.Context, newTask model.Task) error {
 	err := r.PostgreClient.Create(&newTask).Error
 	if err != nil {
 		return err
@@ -109,7 +99,7 @@ func (r *TaskRepository) Create(c context.Context, newTask model.Task) error {
 	return nil
 }
 
-func (r *TaskRepository) ListByAssigneeId(assigneeId string) ([]model.Task, error) {
+func (r *TaskPostgresRepository) ListByAssigneeId(assigneeId string) ([]model.Task, error) {
 	var tasks []model.Task
 	err := r.PostgreClient.Model(&model.Task{}).Where("assignee_id = ?", assigneeId).Scan(&tasks).Error
 	if err != nil {
@@ -117,7 +107,7 @@ func (r *TaskRepository) ListByAssigneeId(assigneeId string) ([]model.Task, erro
 	}
 	return tasks, nil
 }
-func (r *TaskRepository) GetTaskByAssigneeId(id uuid.UUID, assigneeId uuid.UUID) (model.Task, error) {
+func (r *TaskPostgresRepository) GetTaskByAssigneeId(id uuid.UUID, assigneeId uuid.UUID) (model.Task, error) {
 	var task model.Task
 	err := r.PostgreClient.Model(&model.Task{}).Where(&model.Task{Id: id, AssigneeId: assigneeId}).First(&task).Error
 	if err != nil {
@@ -126,7 +116,7 @@ func (r *TaskRepository) GetTaskByAssigneeId(id uuid.UUID, assigneeId uuid.UUID)
 	return task, nil
 }
 
-func (r *TaskRepository) GetTaskByDueDate(date time.Time) ([]model.Task, error) {
+func (r *TaskPostgresRepository) GetTaskByDueDate(date time.Time) ([]model.Task, error) {
 	var tasks []model.Task
 	err := r.PostgreClient.Model(&model.Task{}).Where(&model.Task{DueDate: date}).Scan(&tasks).Error
 	if err != nil {
@@ -135,7 +125,7 @@ func (r *TaskRepository) GetTaskByDueDate(date time.Time) ([]model.Task, error) 
 	return tasks, nil
 }
 
-func (r *TaskRepository) UpdateStatus(id uuid.UUID, status string) error {
+func (r *TaskPostgresRepository) UpdateStatus(id uuid.UUID, status string) error {
 	err := r.PostgreClient.Where(&model.Task{Id: id}).Update("status", status).Error
 	if err != nil {
 		return err

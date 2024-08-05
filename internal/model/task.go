@@ -25,16 +25,16 @@ var TaskStatusMap = map[TaskStatus]string{
 }
 
 type Task struct {
-	Id          uuid.UUID  `gorm:"type:uuid;primaryKey;not null" json:"id"`
-	Title       string     `gorm:"type:varchar(255)" json:"title"`
-	Description string     `gorm:"type:text" json:"description"`
-	Status      TaskStatus `gorm:"type:varchar(20)" json:"status"`
-	AssigneeId  uuid.UUID  `gorm:"type:uuid" json:"assignee_id"`
-	CreatorId   uuid.UUID  `gorm:"type:uuid" json:"creator_id"`
-	DueDate     time.Time  `gorm:"type:timestamp with time zone" json:"due_date"`
-	CreatedAt   time.Time  `gorm:"type:timestamp with time zone" json:"created_at"`
-	UpdatedAt   time.Time  `gorm:"type:timestamp with time zone" json:"updated_at"`
-	DeletedAt   gorm.DeletedAt
+	Id          uuid.UUID      `gorm:"type:uuid;primaryKey;not null" bson:"id" json:"id"`
+	Title       string         `gorm:"type:varchar(255)" bson:"title" json:"title"`
+	Description string         `gorm:"type:text" bson:"description" json:"description"`
+	Status      TaskStatus     `gorm:"type:varchar(20)" bson:"status" json:"status"`
+	AssigneeId  uuid.UUID      `gorm:"type:uuid" bson:"assignee_id" json:"assignee_id"`
+	CreatorId   uuid.UUID      `gorm:"type:uuid" bson:"creator_id" json:"creator_id"`
+	DueDate     time.Time      `gorm:"type:timestamp with time zone" bson:"due_date" json:"due_date"`
+	CreatedAt   time.Time      `gorm:"type:timestamp with time zone" bson:"created_at" json:"created_at"`
+	UpdatedAt   time.Time      `gorm:"type:timestamp with time zone" bson:"updated_at" json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" bson:"deleted_at" json:"deleted_at"`
 }
 
 func MapCreateTaskRequest(req dto.CreateTaskRequest) Task {

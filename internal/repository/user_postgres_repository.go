@@ -5,22 +5,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type IUserRepository interface {
-	Create(user model.User) error
-	GetByEmail(email string) (model.User, error)
-}
-
-type UserRepository struct {
+type UserPostgresRepository struct {
 	PostgreClient *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) IUserRepository {
-	return &UserRepository{
+func NewUserPostgresRepository(db *gorm.DB) IUserRepository {
+	return &UserPostgresRepository{
 		PostgreClient: db,
 	}
 }
 
-func (r *UserRepository) Create(user model.User) error {
+func (r *UserPostgresRepository) Create(user model.User) error {
 	err := r.PostgreClient.Create(&user).Error
 	if err != nil {
 		return err
@@ -28,7 +23,7 @@ func (r *UserRepository) Create(user model.User) error {
 	return nil
 }
 
-func (r *UserRepository) GetByEmail(email string) (model.User, error) {
+func (r *UserPostgresRepository) GetByEmail(email string) (model.User, error) {
 	user := model.User{}
 	err := r.PostgreClient.Where("email = ?", email).First(&user).Error
 	if err != nil {

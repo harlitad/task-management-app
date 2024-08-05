@@ -3,12 +3,12 @@ package model
 import "time"
 
 type User struct {
-	Id        string `gorm:"type:uuid;primaryKey;not null" json:"id"`
-	Name      string `gorm:"type:varchar(255)" json:"name"`
-	Email     string `gorm:"type:varchar(255);unique;not null" json:"email"`
-	Password  string `gorm:"type:varchar(255);not null" json:"password"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Id        string    `gorm:"type:uuid;primaryKey;not null" bson:"_id" json:"id"`
+	Name      string    `gorm:"type:varchar(255)" bson:"name" json:"name"`
+	Email     string    `gorm:"type:varchar(255);unique;not null" bson:"email" json:"email"`
+	Password  string    `gorm:"type:varchar(255);not null" bson:"password" json:"password"`
+	CreatedAt time.Time `gorm:"autoCreateTime" bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" bson:"updated_at" json:"updated_at"`
 }
 
 type UserTask struct {

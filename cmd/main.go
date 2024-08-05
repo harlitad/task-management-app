@@ -12,6 +12,8 @@ import (
 	"github.com/harlitad/task-management-app/internal/service"
 	"github.com/harlitad/task-management-app/internal/usecase"
 	"github.com/harlitad/task-management-app/pkg/logger"
+	files "github.com/swaggo/files" // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title Task Management Service APIs
@@ -24,41 +26,66 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	// parsing envar
+	// Parsing environment variables
 	appConfig := config.ParseConfig()
 
+	// Initialize the application
 	app := initiateApp(appConfig)
+
+	// Set up Swagger
+	app.GET("/swagger/*any", ginSwagger.WrapHandler(files.Handler))
+
+	// Start the application
 	if err := app.Run(":8080"); err != nil {
-		log.Fatalf("http listen failed!")
+		log.Fatalf("http listen failed: %v", err)
 	}
 }
 
 func initiateApp(appConfig *config.Config) *gin.Engine {
 
-	// create new client of postgreSql
-	db, err := repository.NewPostgreClient(*appConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	logger := logger.NewLogrusLogger(*appConfig)
 
+	appConfig.UseMongo = true
+
+	var taskRepository repository.ITaskRepository
+	var userRepository repository.IUserRepository
+
+	if appConfig.UseMongo {
+		logger.Info("Database uses MongoDB")
+
+		// Initialize MongoDB client
+		mongoClient, err := repository.NewMongoClient(*appConfig)
+		if err != nil {
+			logger.Fatalf("Failed to connect mongo db, %s", err.Error())
+		}
+
+		// Initialize MongoDB repositories
+		taskRepository = repository.NewMongoTaskRepository(logger, mongoClient)
+		userRepository = repository.NewUserMongoRepository(mongoClient)
+	} else {
+		// Initialize PostgreSQL client
+		postgresDB, err := repository.NewPostgreClient(*appConfig)
+		if err != nil {
+			logger.Fatalf("Failed to connect postgres db, %s", err.Error())
+		}
+
+		// Initialize PostgreSQL repositories
+		taskRepository = repository.NewPostgreTaskRepository(logger, postgresDB)
+		userRepository = repository.NewUserPostgresRepository(postgresDB)
+	}
+
 	// Task
-	taskRepository := repository.NewTaskRepository(logger, db)
 	taskService := service.NewTaskService(logger, taskRepository)
 	taskUsecase := usecase.NewTaskUsecase(logger, taskService)
 	taskHandler := handler.NewTaskHandler(logger, taskUsecase)
 
 	// User
-	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository)
 	userUsecase := usecase.NewUserUsecase(userService)
 	userHandler := handler.NewUserHandler(userUsecase)
 
-	// setup router
-	router := router.NewRouter(router.Router{Config: *appConfig, TaskHandler: taskHandler, UserHandler: userHandler})
-	// wip: swagger
-	// router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Setup router
+	r := router.NewRouter(router.Router{Config: *appConfig, TaskHandler: taskHandler, UserHandler: userHandler})
 
-	return router
+	return r
 }
