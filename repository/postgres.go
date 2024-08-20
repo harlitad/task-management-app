@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"example.com/task-management-app/config"
-	"example.com/task-management-app/model"
+	"github.com/harlitad/task-management-app/config"
+	"github.com/harlitad/task-management-app/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -24,7 +24,7 @@ func NewPostgreClient(config config.Config) (*gorm.DB, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	err = db.AutoMigrate(&model.Task{}, &model.User{})
+	err = db.AutoMigrate(model.Task{}, &model.User{})
 	if err != nil {
 		log.Fatal("Failed to migrate " + err.Error())
 	}

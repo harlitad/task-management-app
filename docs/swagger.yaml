@@ -1,5 +1,57 @@
-basePath: /task-management-app
+basePath: /task-management-service
 definitions:
+  dto.CreateTaskRequest:
+    properties:
+      assignee_id:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.Task:
+    properties:
+      assignee_id:
+        type: string
+      created_at:
+        type: string
+      creator_id:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      update_at:
+        type: string
+    type: object
+  dto.Tasks:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Task'
+        type: array
+    type: object
+  dto.UpdateTaskRequest:
+    properties:
+      assignee_id:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
   model.AuthenticationRequest:
     properties:
       email:
@@ -13,27 +65,9 @@ definitions:
         type: string
       email:
         type: string
-      name:
-        type: string
-    type: object
-  model.CreateTaskRequest:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-      status:
-        type: string
-    type: object
-  model.CreateTaskResponse:
-    properties:
-      description:
-        type: string
       id:
         type: string
       name:
-        type: string
-      status:
         type: string
     type: object
   model.CreateUserRequest:
@@ -49,27 +83,16 @@ definitions:
     properties:
       email:
         type: string
-      name:
-        type: string
-    type: object
-  model.Task:
-    properties:
-      description:
-        type: string
       id:
         type: string
       name:
-        type: string
-      status:
-        type: string
-      user_id:
         type: string
     type: object
 host: localhost:8080
 info:
   contact: {}
   description: Task Management App Swagger APIs.
-  title: Task Management App APIs
+  title: Task Management Service APIs
   version: "1.0"
 paths:
   /auth:
@@ -120,7 +143,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get list user's task
+      description: Get list all task
       produces:
       - application/json
       responses:
@@ -128,43 +151,45 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Task'
+              $ref: '#/definitions/dto.Tasks'
             type: array
       security:
       - BearerAuth: []
-      summary: Get list user's task
+      summary: Get list all task
       tags:
       - task
     post:
       consumes:
       - application/json
-      description: Create user's task
+      description: Create Task
       parameters:
-      - description: Create Task
+      - description: create task request
         in: body
-        name: user
+        name: CreateTaskRequest
         required: true
         schema:
-          $ref: '#/definitions/model.CreateTaskRequest'
+          $ref: '#/definitions/dto.CreateTaskRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.CreateTaskResponse'
+            items:
+              $ref: '#/definitions/dto.Task'
+            type: array
       security:
       - BearerAuth: []
-      summary: Create user's task
+      summary: Create Task
       tags:
       - task
   /v1/task/{id}:
     delete:
       consumes:
       - application/json
-      description: Delete user's task by id
+      description: Delete task by given id (uuid)
       parameters:
-      - description: Task ID
+      - description: task id
         in: path
         name: id
         required: true
@@ -176,15 +201,15 @@ paths:
           description: No Content
       security:
       - BearerAuth: []
-      summary: Delete user's task by id
+      summary: Delete task by given id
       tags:
       - task
     get:
       consumes:
       - application/json
-      description: Get user's task by id
+      description: Get task by given Id
       parameters:
-      - description: Task ID
+      - description: task id
         in: path
         name: id
         required: true
@@ -195,10 +220,61 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Task'
+            items:
+              $ref: '#/definitions/dto.Task'
+            type: array
       security:
       - BearerAuth: []
-      summary: Get user's task by id
+      summary: Get task by given Id
+      tags:
+      - task
+    patch:
+      consumes:
+      - application/json
+      description: Update task by given Id
+      parameters:
+      - description: task id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: update task request
+        in: body
+        name: UpdateTaskRequest
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Task'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Update task by given Id
+      tags:
+      - task
+  /v1/task/today:
+    get:
+      consumes:
+      - application/json
+      description: Get list all task due date by today
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Tasks'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get list all task due date by today
       tags:
       - task
 schemes:

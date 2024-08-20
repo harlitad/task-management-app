@@ -1,14 +1,14 @@
 package service
 
 import (
-	"example.com/task-management-app/model"
-	"example.com/task-management-app/repository"
-	"example.com/task-management-app/utils"
 	"github.com/google/uuid"
+	"github.com/harlitad/task-management-app/internal/model"
+	"github.com/harlitad/task-management-app/internal/repository"
+	"github.com/harlitad/task-management-app/pkg/utils"
 )
 
 type IUserService interface {
-	Create(user model.User) error
+	Create(user model.User) (model.User, error)
 	GetByEmail(email string) (model.User, error)
 }
 
@@ -22,10 +22,10 @@ func NewUserService(userRepository repository.IUserRepository) IUserService {
 	}
 }
 
-func (s *UserService) Create(user model.User) error {
+func (s *UserService) Create(user model.User) (model.User, error) {
 	hashingPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
-		return err
+		return model.User{}, err
 	}
 	user.Password = hashingPassword
 	user.Id = uuid.NewString()
@@ -33,10 +33,10 @@ func (s *UserService) Create(user model.User) error {
 	// calling to repository
 	err = s.UserRepository.Create(user)
 	if err != nil {
-		return err
+		return model.User{}, err
 	}
 
-	return nil
+	return user, nil
 }
 
 func (s *UserService) GetByEmail(email string) (model.User, error) {

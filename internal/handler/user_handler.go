@@ -5,9 +5,9 @@ import (
 
 	"strings"
 
-	"example.com/task-management-app/model"
-	"example.com/task-management-app/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/harlitad/task-management-app/internal/model"
+	"github.com/harlitad/task-management-app/internal/usecase"
 )
 
 type UserHandler struct {
@@ -46,14 +46,16 @@ func (h *UserHandler) Create(c *gin.Context) {
 	}
 
 	// calling usecase
-	err := h.UserUsecase.Create(newUser)
+	res, err := h.UserUsecase.Create(newUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusCreated, model.CreateUserResponse{
-		Name:  user.Name,
-		Email: user.Email,
+		Id:    res.Id,
+		Name:  res.Name,
+		Email: res.Email,
 	})
 }
 
@@ -74,13 +76,7 @@ func (h *UserHandler) Authentication(c *gin.Context) {
 		return
 	}
 
-	// mapping to user model
-	user := model.User{
-		Email:    req.Email,
-		Password: req.Password,
-	}
-
-	token, err := h.UserUsecase.Authentication(user)
+	token, user, err := h.UserUsecase.Authentication(req.Email, req.Password)
 	if err != nil {
 		if strings.Contains(err.Error(), "record not found") {
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
@@ -91,6 +87,7 @@ func (h *UserHandler) Authentication(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, model.AuthenticationResponse{
+		Id:          user.Id,
 		Name:        user.Name,
 		Email:       user.Email,
 		AccessToken: token,

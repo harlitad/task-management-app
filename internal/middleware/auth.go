@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"example.com/task-management-app/model"
-	"example.com/task-management-app/pkg/auth"
 	"github.com/gin-gonic/gin"
+	"github.com/harlitad/task-management-app/internal/model"
+	"github.com/harlitad/task-management-app/pkg/auth"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
