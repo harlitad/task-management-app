@@ -1,13 +1,25 @@
-version: 'v2.0.0'
+version: '1.0.0'  # Update to the latest compatible version if needed
 
 services:
+  tma_mongodb:
+    image: mongo:latest
+    container_name: tma_mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+    networks:
+      - tma-network
+    ports:
+      - "27017:27017"
+
   tma_postgresql:
     image: postgres:12-alpine
     container_name: tma_postgresql
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=tma
+      - POSTGRES_USER=${POSTGRE_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRE_PASSWORD}
+      - POSTGRES_DB=${POSTGRE_DB_NAME}
       - POSTGRES_EXTENSIONS=uuid-ossp
     networks:
       - tma-network
@@ -23,6 +35,7 @@ services:
       - "8080:8080"
     depends_on:
       - tma_postgresql
+      - tma_mongodb
     environment:
       - POSTGRE_HOST=tma_postgresql
       - POSTGRE_USERNAME=admin
@@ -30,6 +43,12 @@ services:
       - POSTGRE_PORT=5432
       - POSTGRE_DB_NAME=tma
       - BASE_URL=task-management-service
+      - USE_MONGO=true
+      - MONGO_HOST=tma_mongodb
+      - MONGO_PORT=27017
+      - MONGO_USERNAME=admin
+      - MONGO_PASSWORD=admin
+      - MONGO_DATABASE=tma
     networks:
       - tma-network
 
